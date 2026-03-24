@@ -132,11 +132,16 @@ class MainWindow(QMainWindow):
                         if file.is_file():
                             print('文件存在')
                             try:
-                                # 读excel会死机
-                                df = pd.read_excel(file, dtype=str)  # 以字符串形式打开并读取excel表格
-                                print(df.head())
+                                # 读excel格式
+                                df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
+                                data = pd.DataFrame(df)
+                                print(data)
+                                # data1 = data.iloc[0,11]
+                                # data2 = data.iloc[1,11]
+                                # data3 = data.iloc[2,10]
+                                # print(data1, data2, data3)
 
-                                # 读取csv正常
+                                # 读取csv格式
                                 # df = pd.read_csv(file, dtype=str)
                                 # print(df.head())
                             except FileNotFoundError as e:
