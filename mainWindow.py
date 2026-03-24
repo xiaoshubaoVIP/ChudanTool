@@ -7,6 +7,8 @@ import PyQt5.QtCore as QtCore
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QMainWindow, QApplication, QAction, \
     QDesktopWidget, QLabel, QLineEdit, QPushButton
 import pandas as pd
+import openpyxl
+from openpyxl import load_workbook
 
 print("pyqt5:v"+QtCore.QT_VERSION_STR)
 print(QtCore.QT_VERSION_STR)
@@ -132,10 +134,17 @@ class MainWindow(QMainWindow):
                         if file.is_file():
                             print('文件存在')
                             try:
+                                wb = load_workbook(file)
+                                sheet = wb['营改增税负分析测算明细表']
+                                value1 = sheet['F12'].value
+                                value2 = sheet['L12'].value
+                                value3 = sheet['G11'].value
+                                print(value1, value2, value3)
+
                                 # 读excel格式
-                                df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
-                                data = pd.DataFrame(df)
-                                print(data)
+                                # df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
+                                # data = pd.DataFrame(df)
+                                # print(data)
                                 # data1 = data.iloc[0,11]
                                 # data2 = data.iloc[1,11]
                                 # data3 = data.iloc[2,10]
