@@ -47,8 +47,8 @@ class MainWindow(QMainWindow):
         layout_1.addWidget(self.push_button_start)
 
         #实例化textEdit并加入布局
-        text_edit = QTextEdit()
-        layout_2.addWidget(text_edit)
+        self.text_edit = QTextEdit()
+        layout_2.addWidget(self.text_edit)
 
         #实例化plot并加入布局
 
@@ -116,6 +116,48 @@ class MainWindow(QMainWindow):
         # 将窗口移动到屏幕中央
         self.move(int((screen.width() - size.width()) / 2), int((screen.height() - size.height()) / 2))
 
+    @staticmethod
+    def company_process(self, dir_name, file_path):
+        # print(file_path)
+
+        file_name = os.path.basename(file_path)
+        file = Path(file_path)
+
+        if file.is_file():
+            match dir_name:
+                case '国君':
+                    if "STW895" in file_name:
+                        print('国君:', file_name)
+                        self.text_edit.append('国君:'+file_name)
+                        try:
+                            wb = load_workbook(file)
+                            sheet = wb['营改增税负分析测算明细表']
+                            value1 = sheet['F12'].value
+                            value2 = sheet['L12'].value
+                            value3 = sheet['G11'].value
+                            print(value1, value2, value3)
+                            self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
+                        except FileNotFoundError as e:
+                            print(f"Error: {e}")
+                case '招商':
+                    if "全额申报表" in file_name:
+                        print('招商:', file_name)
+                        self.text_edit.append('招商:'+file_name)
+                        try:
+                            wb = load_workbook(file)
+                            sheet = wb['表1-应税申报表']
+                            value1 = sheet['G15'].value
+                            value2 = sheet['I15'].value
+                            value3 = sheet['F15'].value
+                            print(value1, value2, value3)
+                            self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
+                        except FileNotFoundError as e:
+                            print(f"Error: {e}")
+
+                case _:
+                    print(dir_name+'无需处理')
+
+
     #遍历当前目录
     def list_directory(self):
         for entry in os.listdir(self.path):
@@ -123,50 +165,53 @@ class MainWindow(QMainWindow):
 
             if os.path.isdir(full_path):                    #如果是目录
                 dir_name = os.path.basename(full_path)
-                print(f"{dir_name} 是一个目录")
+                # print(f"{dir_name} 是一个目录")
                 for index in os.listdir(full_path):         #遍历该目录
-                    child_path = os.path.join(full_path, index)
-                    file_name = os.path.basename(child_path)
-                    print(f"{file_name} 是一个文件")
-                    if "国君" in dir_name and "STW895" in file_name:
-                        print("国君表格:"+child_path)
-                        file = Path(child_path)
-                        if file.is_file():
-                            print('文件存在')
-                            try:
-                                wb = load_workbook(file)
-                                sheet = wb['营改增税负分析测算明细表']
-                                value1 = sheet['F12'].value
-                                value2 = sheet['L12'].value
-                                value3 = sheet['G11'].value
-                                print(value1, value2, value3)
+                    file_path = os.path.join(full_path, index)
+                    self.company_process(self, dir_name=dir_name, file_path=file_path)
 
-                                # 读excel格式
-                                # df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
-                                # data = pd.DataFrame(df)
-                                # print(data)
-                                # data1 = data.iloc[0,11]
-                                # data2 = data.iloc[1,11]
-                                # data3 = data.iloc[2,10]
-                                # print(data1, data2, data3)
-
-                                # 读取csv格式
-                                # df = pd.read_csv(file, dtype=str)
-                                # print(df.head())
-                            except FileNotFoundError as e:
-                                print(f"Error: {e}")
-                    elif "招商" in dir_name and "全额申报表" in file_name:
-                        print("招商表格:OK")
+                    # if "国君" in dir_name and "STW895" in file_name:
+                    #     print("国君表格:"+child_path)
+                    #     file = Path(child_path)
+                    #     if file.is_file():
+                    #         print('文件存在')
+                    #         try:
+                    #             wb = load_workbook(file)
+                    #             sheet = wb['营改增税负分析测算明细表']
+                    #             value1 = sheet['F12'].value
+                    #             value2 = sheet['L12'].value
+                    #             value3 = sheet['G11'].value
+                    #             print(value1, value2, value3)
+                    #
+                    #             # 读excel格式
+                    #             # df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
+                    #             # data = pd.DataFrame(df)
+                    #             # print(data)
+                    #             # data1 = data.iloc[0,11]
+                    #             # data2 = data.iloc[1,11]
+                    #             # data3 = data.iloc[2,10]
+                    #             # print(data1, data2, data3)
+                    #
+                    #             # 读取csv格式
+                    #             # df = pd.read_csv(file, dtype=str)
+                    #             # print(df.head())
+                    #         except FileNotFoundError as e:
+                    #             print(f"Error: {e}")
+                    # elif "招商" in dir_name and "全额申报表" in file_name:
+                    #     print("招商表格:OK")
 
     def start_button(self):
         print("开始")
         temp_path = QtCore.QDir(self.line_edit_path.text())
         path = temp_path.absolutePath()
-        print(path)
+        print('目录:'+path)
+        self.text_edit.append('目录:'+path)
         if not os.path.isdir(path):
-            print("目录错误")
+            print("错误")
+            self.text_edit.append("错误")
         else:
-            print("目录正确")
+            print("正确")
+            self.text_edit.append("正确")
             self.path = path
             self.list_directory()
 
