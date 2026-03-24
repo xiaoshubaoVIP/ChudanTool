@@ -17,6 +17,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.error = '<font color="red">{}</font>'
+        self.warning = '<font color="orange">{}</font>'
+        self.valid = '<font color="green">{}</font>'
+
         #设置菜单栏
         self.ex = None
         self.set_bar()
@@ -54,7 +58,7 @@ class MainWindow(QMainWindow):
 
         #设置窗体的宽高和标题
         self.resize(1680,960)
-        self.setWindowTitle("ChuChu小助手")
+        self.setWindowTitle("ChuChu小助手 V1.0")
 
         #将左侧和右侧布局添加到主水平布局中
         main_layout.addLayout(layout_1)
@@ -65,6 +69,30 @@ class MainWindow(QMainWindow):
 
         #调用居中函数
         self.center()
+
+
+        # 设置信息
+        temp_path = QtCore.QDir.currentPath()
+        temp_path = QtCore.QDir(temp_path)
+        self.set_path = temp_path.absolutePath()+'/setting/'
+        if not os.path.isdir(self.set_path):
+            os.mkdir(self.set_path)
+            print("set文件不存在")
+            self.text_edit.append(self.error.format("请先在setting目录下添加设置文件"))
+        else:
+            set_file = Path(self.set_path + 'setting.xlsx')
+            if set_file.is_file():
+                try:
+                    self.set = pd.read_excel(set_file, dtype=str)  # 以字符串形式打开并读取excel表格
+                    print(self.set)
+                    print('set文件存在')
+                    self.text_edit.append(self.valid.format("设置文件正常"))
+                except FileNotFoundError as e:
+                    print(f"设置文件打开失败: {e}")
+                    self.text_edit.append(self.error.format("设置文件打开失败"))
+            else:
+                print("set文件不存在")
+                self.text_edit.append(self.error.format("设置文件不存在"))
 
     def set_bar(self):
         # 实例化主窗口的QMenuBar对象
@@ -84,29 +112,8 @@ class MainWindow(QMainWindow):
 
         # 向菜单栏中添加“设置”
         menu_set = bar.addMenu('设置')
-        menu_set.addAction('消息通知')
-        menu_set.addAction('数据平台')
-
-        # 向菜单栏中添加“选股”
-        # menu_select = bar.addMenu('选股')
-        # short_term = QAction('短线刷选',self)
-        # menu_select.addAction(short_term)
-        # midline = QAction('中线刷选',self)
-        # menu_select.addAction(midline)
-        # long_term = QAction('长线刷选',self)
-        # menu_select.addAction(long_term)
-        # menu_select.triggered[QAction].connect(self.select_trigger)
-
-
-    # def select_trigger(self, action):
-        # if action.triggered:
-        #     print(action.text() + '触发了')
-        #     if action.text() == '短线刷选':
-        #         print("短线刷选")
-        #     elif action.text() == '中线刷选':
-        #         print("中线刷选")
-        #     elif action.text() == '长线刷选':
-        #         print("长线刷选")
+        menu_set.addAction('配置一')
+        menu_set.addAction('配置二')
 
     def center(self):
         # 获取屏幕的大小
@@ -132,9 +139,9 @@ class MainWindow(QMainWindow):
                         try:
                             wb = load_workbook(file)
                             sheet = wb['营改增税负分析测算明细表']
-                            value1 = sheet['F12'].value
-                            value2 = sheet['L12'].value
-                            value3 = sheet['G11'].value
+                            value1 = sheet['F12'].value     #G20
+                            value2 = sheet['L12'].value     #I20
+                            value3 = sheet['G11'].value     #G21
                             print(value1, value2, value3)
                             self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
                         except FileNotFoundError as e:
@@ -146,9 +153,9 @@ class MainWindow(QMainWindow):
                         try:
                             wb = load_workbook(file)
                             sheet = wb['表1-应税申报表']
-                            value1 = sheet['G15'].value
-                            value2 = sheet['I15'].value
-                            value3 = sheet['F15'].value
+                            value1 = sheet['G15'].value     #G4
+                            value2 = sheet['I15'].value     #I4
+                            value3 = sheet['F15'].value     #G5
                             print(value1, value2, value3)
                             self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
                         except FileNotFoundError as e:
@@ -170,59 +177,21 @@ class MainWindow(QMainWindow):
                     file_path = os.path.join(full_path, index)
                     self.company_process(self, dir_name=dir_name, file_path=file_path)
 
-                    # if "国君" in dir_name and "STW895" in file_name:
-                    #     print("国君表格:"+child_path)
-                    #     file = Path(child_path)
-                    #     if file.is_file():
-                    #         print('文件存在')
-                    #         try:
-                    #             wb = load_workbook(file)
-                    #             sheet = wb['营改增税负分析测算明细表']
-                    #             value1 = sheet['F12'].value
-                    #             value2 = sheet['L12'].value
-                    #             value3 = sheet['G11'].value
-                    #             print(value1, value2, value3)
-                    #
-                    #             # 读excel格式
-                    #             # df = pd.read_excel(file, sheet_name='营改增税负分析测算明细表', usecols='F,L,G')  # 以字符串形式打开并读取excel表格
-                    #             # data = pd.DataFrame(df)
-                    #             # print(data)
-                    #             # data1 = data.iloc[0,11]
-                    #             # data2 = data.iloc[1,11]
-                    #             # data3 = data.iloc[2,10]
-                    #             # print(data1, data2, data3)
-                    #
-                    #             # 读取csv格式
-                    #             # df = pd.read_csv(file, dtype=str)
-                    #             # print(df.head())
-                    #         except FileNotFoundError as e:
-                    #             print(f"Error: {e}")
-                    # elif "招商" in dir_name and "全额申报表" in file_name:
-                    #     print("招商表格:OK")
-
     def start_button(self):
         print("开始")
         temp_path = QtCore.QDir(self.line_edit_path.text())
         path = temp_path.absolutePath()
         print('目录:'+path)
+        self.text_edit.clear()
         self.text_edit.append('目录:'+path)
         if not os.path.isdir(path):
             print("错误")
-            self.text_edit.append("错误")
+            self.text_edit.append(self.error.format("错误"))
         else:
             print("正确")
-            self.text_edit.append("正确")
+            self.text_edit.append(self.valid.format("目录正常"))
             self.path = path
             self.list_directory()
-
-        # path = r'C:/Users/claybox/Desktop/PyTest/2026年1月/国君/'
-        # print("开始读df", path + 'stock_data.xlsx')
-        #
-        # file = Path(path + 'stock_data.xlsx')
-        # if file.is_file():
-        #     print('文件存在')
-        #     input_table = pd.read_excel(path + 'stock_data.xlsx', dtype=str)  # 以字符串形式打开并读取excel表格
-        #     print(input_table.head())
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
