@@ -180,28 +180,31 @@ class MainWindow(QMainWindow):
                 print("目录:"+dir_name)
 
                 data = pd.DataFrame(self.set_data)          #根据目录过滤公司
-                company_data = data[data['公司'] == str(dir_name)]
+                company_data = data[data['公司']==str(dir_name)]
 
-                for index in os.listdir(full_path):         #遍历该目录
+                for index in os.listdir(full_path):         #遍历该目录下文件
                     file_path = os.path.join(full_path, index)
                     file_name = os.path.basename(file_path)
                     file = Path(file_path)
                     print("文件:" + file_name)
 
                     if file.is_file():
-                            for i, row in company_data.iterrows():
-                                if row['文件名称摘要'] in file_name:
-                                    print(row['源数据地址'], row['目标地址'])
-                                    try:
-                                        wb = load_workbook(file)
+                        for i, row in company_data.iterrows():
+                            if row['文件名称摘要'] in file_name:
+                                print(row['源数据地址'], row['目标地址'])
+                                try:
+                                    wb = load_workbook(file)
+                                    print("open file")
+                                    if str(row['表格名称'] in wb.sheetnames):
                                         sheet = wb[str(row['表格名称'])]
                                         src_value = sheet[str(row['源数据地址'])].value     #G20
                                         print(src_value)
                                         self.text_edit.append(str(src_value))
-                                    except FileNotFoundError as e:
-                                        print(f"Error: {e}")
-
-                    # self.company_process(self, dir_name=dir_name, file_path=file_path)
+                                    else:
+                                        print('源数据文件表格sheet错误')
+                                        self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
+                                except FileNotFoundError as e:
+                                    print(f"Error: {e}")
 
     def start_button(self):
         print("开始")
