@@ -126,19 +126,19 @@ class MainWindow(QMainWindow):
                     child_path = os.path.join(full_path, index)
                     file_name = os.path.basename(child_path)
                     print(f"{file_name} 是一个文件")
-                    if "国君" in dir_name and "stock_data" in file_name:
+                    if "国君" in dir_name and "STW895" in file_name:
                         print("国君表格:"+child_path)
                         file = Path(child_path)
                         if file.is_file():
                             print('文件存在')
                             try:
                                 # 读excel会死机
-                                # df = pd.read_excel(file, dtype=str)
-                                # print(df.head())
+                                df = pd.read_excel(file, dtype=str)  # 以字符串形式打开并读取excel表格
+                                print(df.head())
 
                                 # 读取csv正常
-                                df = pd.read_csv(file, dtype=str)
-                                print(df.head())
+                                # df = pd.read_csv(file, dtype=str)
+                                # print(df.head())
                             except FileNotFoundError as e:
                                 print(f"Error: {e}")
                     elif "招商" in dir_name and "全额申报表" in file_name:
@@ -156,6 +156,14 @@ class MainWindow(QMainWindow):
             self.path = path
             self.list_directory()
 
+        # path = r'C:/Users/claybox/Desktop/PyTest/2026年1月/国君/'
+        # print("开始读df", path + 'stock_data.xlsx')
+        #
+        # file = Path(path + 'stock_data.xlsx')
+        # if file.is_file():
+        #     print('文件存在')
+        #     input_table = pd.read_excel(path + 'stock_data.xlsx', dtype=str)  # 以字符串形式打开并读取excel表格
+        #     print(input_table.head())
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
