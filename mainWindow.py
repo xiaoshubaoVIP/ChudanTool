@@ -70,7 +70,6 @@ class MainWindow(QMainWindow):
         #调用居中函数
         self.center()
 
-
         # 设置信息
         temp_path = QtCore.QDir.currentPath()
         temp_path = QtCore.QDir(temp_path)
@@ -144,7 +143,7 @@ class MainWindow(QMainWindow):
                             try:
                                 wb = load_workbook(file)
                                 print("open file")
-                                if str(row['源数据sheet表格'] in wb.sheetnames):
+                                if str(row['源数据sheet表格']) in wb.sheetnames:
                                     sheet = wb[str(row['源数据sheet表格'])]
                                     src_value = sheet[str(row['源数据地址'])].value
                                     self.des_sheet[str(row['目标地址'])] = src_value
@@ -202,20 +201,31 @@ class MainWindow(QMainWindow):
             for index in os.listdir(path):  # 遍历该目录下文件
                 des_file_path = os.path.join(path, index)
                 des_file_name = os.path.basename(des_file_path)
-
                 if subset_des_file_name in des_file_name:
                     des_file = Path(des_file_path)
                     if des_file.is_file():
                         try:
-                            print("目标文件:"+des_file_name)
+                            #获取目标sheet
+                            parts = des_file_name.split('【')
+                            parts = parts[1].split('】')
+                            date = parts[0]
+                            sheet_name = date[:4]+'.'+ date[4:]
+                            print("目标文件:" + des_file_name)
+                            print("目标sheet:" + sheet_name)
+
                             des_wb = load_workbook(des_file)
-                            self.des_sheet = des_wb.active
-                            self.text_edit.append(self.valid.format("目标文件打开正常"))
-                            self.path = path
-                            self.list_directory()
-                            des_wb.save(des_file)
-                            save_res = True
-                            break
+                            if str(sheet_name) in des_wb.sheetnames:
+                                self.des_sheet = des_wb[str(sheet_name)]
+                                self.text_edit.append(self.valid.format("目标文件打开正常"))
+                                self.path = path
+                                self.list_directory()
+                                des_wb.save(des_file)
+                                save_res = True
+                                break
+                            else:
+                                print("未找到目标sheet:"+sheet_name)
+                                self.text_edit.append(self.error.format("目标sheet打开失败:"+str(des_wb.sheetnames)))
+
                         except FileNotFoundError as e:
                             save_res = False
                             print(f"目标文件打开失败 :{e}")
@@ -227,7 +237,8 @@ class MainWindow(QMainWindow):
 
             if save_res:
                 self.text_edit.append(self.valid.format("执行完成"))
-
+            else:
+                self.text_edit.append(self.error.format("执行失败"))
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
