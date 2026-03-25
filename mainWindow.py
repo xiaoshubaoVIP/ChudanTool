@@ -84,9 +84,10 @@ class MainWindow(QMainWindow):
             if set_file.is_file():
                 try:
                     self.set_data = pd.read_excel(set_file, dtype=str)  # 以字符串形式打开并读取excel表格
+                    self.set_data = pd.DataFrame(self.set_data)
                     print(self.set_data)
                     print('set文件存在')
-                    self.text_edit.append(self.valid.format("设置文件正常"))
+                    self.text_edit.append(self.valid.format("设置文件读取正常"))
                 except FileNotFoundError as e:
                     print(f"设置文件打开失败: {e}")
                     self.text_edit.append(self.error.format("设置文件打开失败"))
@@ -124,50 +125,30 @@ class MainWindow(QMainWindow):
         self.move(int((screen.width() - size.width()) / 2), int((screen.height() - size.height()) / 2))
 
     @staticmethod
-    def company_process(self, dir_name, file_path):
-        # print(file_path)
+    def company_process(self, full_path, company_data):
+        for index in os.listdir(full_path):  # 遍历该目录下文件
+            file_path = os.path.join(full_path, index)
+            file_name = os.path.basename(file_path)
+            file = Path(file_path)
+            print("文件:" + file_name)
 
-        file_name = os.path.basename(file_path)
-        file = Path(file_path)
-
-        if file.is_file():
-            data = pd.DataFrame(self.set_data)
-            company_data = data[data['公司'] == str(dir_name)]
-            print(company_data)
-            # print(company_data[['公司', '文件名称摘要', '表格名称', '源数据地址']].head(5))
-
-            # match dir_name:
-            #     case '国君':
-            #         if "STW895" in file_name:
-            #             print('国君:', file_name)
-            #             self.text_edit.append('国君:'+file_name)
-            #             try:
-            #                 wb = load_workbook(file)
-            #                 sheet = wb['营改增税负分析测算明细表']
-            #                 value1 = sheet['F12'].value     #G20
-            #                 value2 = sheet['L12'].value     #I20
-            #                 value3 = sheet['G11'].value     #G21
-            #                 print(value1, value2, value3)
-            #                 self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
-            #             except FileNotFoundError as e:
-            #                 print(f"Error: {e}")
-            #     case '招商':
-            #         if "全额申报表" in file_name:
-            #             print('招商:', file_name)
-            #             self.text_edit.append('招商:'+file_name)
-            #             try:
-            #                 wb = load_workbook(file)
-            #                 sheet = wb['表1-应税申报表']
-            #                 value1 = sheet['G15'].value     #G4
-            #                 value2 = sheet['I15'].value     #I4
-            #                 value3 = sheet['F15'].value     #G5
-            #                 print(value1, value2, value3)
-            #                 self.text_edit.append(str(value1) +','+ str(value2)+',' + str(value3))
-            #             except FileNotFoundError as e:
-            #                 print(f"Error: {e}")
-            #
-            #     case _:
-            #         print(dir_name+'无需处理')
+            if file.is_file():
+                for index_row, row in company_data.iterrows():  # 遍历过滤后设置数据，即同一个公司（招商）
+                    if row['源数据excel文件'] in file_name:  # 设置数据的源文件名字和当前文件名一致
+                        print(row['源数据地址'], row['目标地址'], index_row)
+                        try:
+                            wb = load_workbook(file)
+                            print("open file")
+                            if str(row['源数据sheet表格'] in wb.sheetnames):
+                                sheet = wb[str(row['源数据sheet表格'])]
+                                src_value = sheet[str(row['源数据地址'])].value  # G20
+                                print(src_value)
+                                self.text_edit.append(str(src_value))
+                            else:
+                                print('源数据文件表格sheet错误')
+                                self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
+                        except FileNotFoundError as e:
+                            print(f"Error: {e}")
 
 
     #遍历当前目录
@@ -181,30 +162,18 @@ class MainWindow(QMainWindow):
 
                 data = pd.DataFrame(self.set_data)          #根据目录过滤公司
                 company_data = data[data['公司']==str(dir_name)]
-
-                for index in os.listdir(full_path):         #遍历该目录下文件
-                    file_path = os.path.join(full_path, index)
-                    file_name = os.path.basename(file_path)
-                    file = Path(file_path)
-                    print("文件:" + file_name)
-
-                    if file.is_file():
-                        for i, row in company_data.iterrows():
-                            if row['文件名称摘要'] in file_name:
-                                print(row['源数据地址'], row['目标地址'])
-                                try:
-                                    wb = load_workbook(file)
-                                    print("open file")
-                                    if str(row['表格名称'] in wb.sheetnames):
-                                        sheet = wb[str(row['表格名称'])]
-                                        src_value = sheet[str(row['源数据地址'])].value     #G20
-                                        print(src_value)
-                                        self.text_edit.append(str(src_value))
-                                    else:
-                                        print('源数据文件表格sheet错误')
-                                        self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
-                                except FileNotFoundError as e:
-                                    print(f"Error: {e}")
+                print(company_data)
+                if company_data['源数据excel文件'].nunique() == 1 and company_data['源数据sheet表格'].nunique() == 1:
+                    print("源文件和源sheet一致")
+                    self.company_process(self, full_path, company_data)
+                elif company_data['源数据excel文件'].nunique() != 1 :
+                    print("源数据excel文件不一致")
+                    self.text_edit.append(self.error.format("目录:" + str(dir_name)))
+                    self.text_edit.append(self.error.format("源数据excel文件不一致"))
+                elif company_data['源数据sheet表格'].nunique() != 1:
+                    print("源sheet不一致")
+                    self.text_edit.append(self.error.format("目录:" + str(dir_name)))
+                    self.text_edit.append(self.error.format("源sheet不一致"))
 
     def start_button(self):
         print("开始")
