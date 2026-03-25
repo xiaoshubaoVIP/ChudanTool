@@ -129,31 +129,33 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def company_process(self, full_path, company_data):
-        for index in os.listdir(full_path):  # 遍历该目录下文件
-            file_path = os.path.join(full_path, index)
-            file_name = os.path.basename(file_path)
-            file = Path(file_path)
-            print("文件:" + file_name)
+        paths = os.walk(full_path)
+        for path, dir_lst, file_lst in paths:
+            for file_name in file_lst:
+                file_path = os.path.join(path, file_name)
+                file_name = os.path.basename(file_path)
+                file = Path(str(file_path))
+                print("文件:" + file_name)
 
-            if file.is_file():
-                for index_row, row in company_data.iterrows():  # 遍历过滤后设置数据，即同一个公司（招商）
-                    if row['源数据excel文件'] in file_name:       # 设置数据的源文件名字和当前文件名一致
-                        print(row['源数据地址'], row['目标地址'], index_row)
-                        try:
-                            wb = load_workbook(file)
-                            print("open file")
-                            if str(row['源数据sheet表格'] in wb.sheetnames):
-                                sheet = wb[str(row['源数据sheet表格'])]
-                                src_value = sheet[str(row['源数据地址'])].value
-                                self.des_sheet[str(row['目标地址'])] = src_value
-                                print(src_value)
-                                self.text_edit.append(str(src_value))
-                            else:
-                                print('源数据文件表格sheet错误')
-                                self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
-                        except FileNotFoundError as e:
-                            print(f"源数据excel文件打开失败: {e}")
-                            self.text_edit.append(self.error.format(f"源数据excel文件打开失败:{e}"))
+                if file.is_file():
+                    for index_row, row in company_data.iterrows():  # 遍历过滤后设置数据，即同一个公司（招商）
+                        if row['源数据excel文件'] in file_name:       # 设置数据的源文件名字和当前文件名一致
+                            print(row['源数据地址'], row['目标地址'], index_row)
+                            try:
+                                wb = load_workbook(file)
+                                print("open file")
+                                if str(row['源数据sheet表格'] in wb.sheetnames):
+                                    sheet = wb[str(row['源数据sheet表格'])]
+                                    src_value = sheet[str(row['源数据地址'])].value
+                                    self.des_sheet[str(row['目标地址'])] = src_value
+                                    print(src_value)
+                                    self.text_edit.append(str(src_value))
+                                else:
+                                    print('源数据文件表格sheet错误')
+                                    self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
+                            except FileNotFoundError as e:
+                                print(f"源数据excel文件打开失败: {e}")
+                                self.text_edit.append(self.error.format(f"源数据excel文件打开失败:{e}"))
 
 
     #遍历当前目录
