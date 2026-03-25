@@ -90,10 +90,13 @@ class MainWindow(QMainWindow):
                     self.text_edit.append(self.valid.format("设置文件读取正常"))
                 except FileNotFoundError as e:
                     print(f"设置文件打开失败: {e}")
-                    self.text_edit.append(self.error.format("设置文件打开失败"))
+                    self.text_edit.append(self.error.format(f"设置文件打开失败: {e}"))
             else:
                 print("set文件不存在")
                 self.text_edit.append(self.error.format("设置文件不存在"))
+
+            #目标写入文件
+            self.des_sheet = None
 
     def set_bar(self):
         # 实例化主窗口的QMenuBar对象
@@ -134,21 +137,23 @@ class MainWindow(QMainWindow):
 
             if file.is_file():
                 for index_row, row in company_data.iterrows():  # 遍历过滤后设置数据，即同一个公司（招商）
-                    if row['源数据excel文件'] in file_name:  # 设置数据的源文件名字和当前文件名一致
+                    if row['源数据excel文件'] in file_name:       # 设置数据的源文件名字和当前文件名一致
                         print(row['源数据地址'], row['目标地址'], index_row)
                         try:
                             wb = load_workbook(file)
                             print("open file")
                             if str(row['源数据sheet表格'] in wb.sheetnames):
                                 sheet = wb[str(row['源数据sheet表格'])]
-                                src_value = sheet[str(row['源数据地址'])].value  # G20
+                                src_value = sheet[str(row['源数据地址'])].value
+                                self.des_sheet[str(row['目标地址'])] = src_value
                                 print(src_value)
                                 self.text_edit.append(str(src_value))
                             else:
                                 print('源数据文件表格sheet错误')
                                 self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
                         except FileNotFoundError as e:
-                            print(f"Error: {e}")
+                            print(f"源数据excel文件打开失败: {e}")
+                            self.text_edit.append(self.error.format(f"源数据excel文件打开失败:{e}"))
 
 
     #遍历当前目录
@@ -188,8 +193,31 @@ class MainWindow(QMainWindow):
         else:
             print("正确")
             self.text_edit.append(self.valid.format("目录正常"))
-            self.path = path
-            self.list_directory()
+
+            subset_des_file_name = str(self.set_data.loc[0, '目标excel文件'])
+
+            for index in os.listdir(path):  # 遍历该目录下文件
+                des_file_path = os.path.join(path, index)
+                des_file_name = os.path.basename(des_file_path)
+
+                if subset_des_file_name in des_file_name:
+                    des_file = Path(des_file_path)
+                    if des_file.is_file():
+                        try:
+                            print("目标文件:"+des_file_name)
+                            des_wb = load_workbook(des_file)
+                            self.des_sheet = des_wb.active
+                            self.text_edit.append(self.valid.format("目标文件打开正常"))
+                            self.path = path
+                            self.list_directory()
+                            des_wb.save(des_file)
+                            break
+                        except FileNotFoundError as e:
+                            print(f"目标文件打开失败 :{e}")
+                            self.text_edit.append(self.error.format(f"目标文件打开失败 :{e}"))
+                else:
+                    print("未找到目标文件")
+                    self.text_edit.append(self.error.format("未找到目标文件"))
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
