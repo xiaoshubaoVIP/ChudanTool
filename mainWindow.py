@@ -182,6 +182,7 @@ class MainWindow(QMainWindow):
 
     def start_button(self):
         print("开始")
+        save_res = False
         temp_path = QtCore.QDir(self.line_edit_path.text())
         path = temp_path.absolutePath()
         print('目录:'+path)
@@ -211,13 +212,20 @@ class MainWindow(QMainWindow):
                             self.path = path
                             self.list_directory()
                             des_wb.save(des_file)
+                            save_res = True
                             break
                         except FileNotFoundError as e:
+                            save_res = False
                             print(f"目标文件打开失败 :{e}")
                             self.text_edit.append(self.error.format(f"目标文件打开失败 :{e}"))
                 else:
+                    save_res = False
                     print("未找到目标文件")
                     self.text_edit.append(self.error.format("未找到目标文件"))
+
+            if save_res:
+                self.text_edit.append(self.valid.format("执行完成"))
+
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
