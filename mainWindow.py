@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from tkinter.filedialog import dialogstates
 
 import PyQt5
 import PyQt5.QtCore as QtCore
@@ -101,14 +102,26 @@ class MainWindow(QMainWindow):
             self.des_sheet = None
 
     def get_dir(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹", options=options)
+        dialog = QFileDialog()
+        dialog.options = QFileDialog.Options()
+        dialog.options |= QFileDialog.ShowDirsOnly
+        folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹", options=dialog.options)
 
         if folder_path:
             print(f"选择的文件夹：{folder_path}")
             self.path = folder_path
             self.line_edit_path.setText(folder_path)
+
+    def open_set_file(self):
+        dialog = QFileDialog(self, "打开设置文件")
+        dialog.setDirectory(self.set_path)
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setOption(QFileDialog.ReadOnly)
+
+        if dialog.exec_():
+            select_set_file = dialog.selectedFiles()[0]
+            os.startfile(select_set_file)
+            print(f"选择设置文件：{select_set_file}")
 
     def set_bar(self):
         # 实例化主窗口的QMenuBar对象
@@ -128,8 +141,9 @@ class MainWindow(QMainWindow):
 
         # 向菜单栏中添加“设置”
         menu_set = bar.addMenu('设置')
-        menu_set.addAction('配置一')
-        menu_set.addAction('配置二')
+        resset_file = QAction('配置文件', self)
+        menu_set.addAction(resset_file)
+        menu_set.triggered[QAction].connect(self.open_set_file)
 
     def center(self):
         # 获取屏幕的大小
