@@ -5,6 +5,7 @@ from tkinter.filedialog import dialogstates
 
 import PyQt5
 import PyQt5.QtCore as QtCore
+from PyQt5 import Qt
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QMainWindow, QApplication, QAction, \
     QDesktopWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QStackedWidget, QFormLayout
 import pandas as pd
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
         self.Stack.addWidget (self.stack2)
         self.Stack.addWidget (self.stack3)
         self.Stack.addWidget (self.stack4)
+        self.Stack.setStyleSheet("background-color: rgb(190,226,224);")
 
         #设置窗体的宽高和标题
         self.resize(1680,960)
@@ -97,9 +99,17 @@ class MainWindow(QMainWindow):
         layout_1.addWidget(self.btn_mod2)
         layout_1.addWidget(self.btn_mod3)
         layout_1.addWidget(self.btn_mod4)
+        layout_1.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        layout_1.setContentsMargins(0,0,0,0)         #控件到layout之间的距离
+        layout_1.setSpacing(0)                        #控件之间的距离
+
         layout_2.addWidget(self.Stack)
+
         main_layout.addLayout(layout_1)
         main_layout.addLayout(layout_2)
+        main_layout.setContentsMargins(0, 0, 0, 0)  # 控件到layout之间的距离
+        main_layout.setSpacing(0)  # 控件之间的距离
+
         central_widget.setLayout(main_layout)
         #设置窗口的主布局
         self.setCentralWidget(central_widget)
@@ -174,6 +184,7 @@ class MainWindow(QMainWindow):
         self.path = QtCore.QDir.currentPath()
         self.line_edit_path = QLineEdit(str(self.path))
         self.line_edit_path.setFixedHeight(40)
+        self.line_edit_path.setStyleSheet("QLineEdit { background-color: white; }")
 
         #开始按键
         self.push_button_start = QPushButton('开始')
@@ -183,6 +194,7 @@ class MainWindow(QMainWindow):
 
         #实例化textEdit并加入布局
         self.text_edit = QTextEdit()
+        self.text_edit.setStyleSheet("QTextEdit { background-color: white; }")
 
         stack1_main_layout = QVBoxLayout()
         stack1_layout_1 = QHBoxLayout()
