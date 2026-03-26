@@ -5,7 +5,7 @@ from pathlib import Path
 import PyQt5
 import PyQt5.QtCore as QtCore
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QMainWindow, QApplication, QAction, \
-    QDesktopWidget, QLabel, QLineEdit, QPushButton
+    QDesktopWidget, QLabel, QLineEdit, QPushButton, QFileDialog
 import pandas as pd
 import openpyxl
 from openpyxl import load_workbook
@@ -26,8 +26,8 @@ class MainWindow(QMainWindow):
         self.set_bar()
 
         #文本框设定
-        self.path = r"C:\Users\claybox\Desktop\PyTest\2026年1月"
-        self.line_edit_path = QLineEdit(self.path)
+        self.path = QtCore.QDir.currentPath()
+        self.line_edit_path = QLineEdit(str(self.path))
         self.line_edit_path.setFixedHeight(40)
 
         #开始按键
@@ -45,8 +45,12 @@ class MainWindow(QMainWindow):
         layout_1 = QHBoxLayout()
         layout_2 = QHBoxLayout()
 
+        #实例化按键
+        self.btn = QPushButton("打开需要统计的目录")
+        self.btn.clicked.connect(self.get_dir)
+
         #实例化路径输入框并加入布局
-        layout_1.addWidget(QLabel("输入表格所在目录:"))
+        layout_1.addWidget(self.btn)
         layout_1.addWidget(self.line_edit_path)
         layout_1.addWidget(self.push_button_start)
 
@@ -71,8 +75,7 @@ class MainWindow(QMainWindow):
         self.center()
 
         # 设置信息
-        temp_path = QtCore.QDir.currentPath()
-        temp_path = QtCore.QDir(temp_path)
+        temp_path = QtCore.QDir(self.path)
         self.set_path = temp_path.absolutePath()+'/setting/'
         if not os.path.isdir(self.set_path):
             os.mkdir(self.set_path)
@@ -96,6 +99,16 @@ class MainWindow(QMainWindow):
 
             #目标写入文件
             self.des_sheet = None
+
+    def get_dir(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹", options=options)
+
+        if folder_path:
+            print(f"选择的文件夹：{folder_path}")
+            self.path = folder_path
+            self.line_edit_path.setText(folder_path)
 
     def set_bar(self):
         # 实例化主窗口的QMenuBar对象
