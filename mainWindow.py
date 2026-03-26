@@ -237,12 +237,14 @@ class MainWindow(QMainWindow):
                                 break
                             else:
                                 print("未找到目标sheet:"+sheet_name)
-                                self.text_edit.append(self.error.format("目标sheet打开失败:"+str(des_wb.sheetnames)))
+                                self.text_edit.append(self.error.format("目标sheet打开失败:"+str(sheet_name)))
+                                self.text_edit.append(self.error.format(str(des_wb.sheetnames)))
 
                         except FileNotFoundError as e:
                             save_res = False
                             print(f"目标文件打开失败 :{e}")
-                            self.text_edit.append(self.error.format(f"目标文件打开失败 :{e}"))
+                            self.text_edit.append(self.error.format("目标文件"+des_file_name+"打开失败"))
+                            self.text_edit.append(self.error.format(f"{e}"))
                 else:
                     save_res = False
                     print("未找到目标文件")
