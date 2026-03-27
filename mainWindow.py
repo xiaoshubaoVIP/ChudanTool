@@ -28,30 +28,29 @@ class MainWindow(QMainWindow):
         self.set_bar()
 
         #功能模块按键
-        self.btn_mod1 = QPushButton("数据统计")
-        self.btn_mod2 = QPushButton("财务报表")
-        self.btn_mod3 = QPushButton("工资核算")
-        self.btn_mod4 = QPushButton("差旅报销")
-
         self.btn_mod1 = QPushButton("数据统计",self)
         self.btn_mod2 = QPushButton("财务报表",self)
         self.btn_mod3 = QPushButton("工资核算",self)
         self.btn_mod4 = QPushButton("差旅报销", self)
+        self.btn_mod5 = QPushButton("网络爬虫", self)
 
         self.btn_mod1.setFixedSize(80,40)
         self.btn_mod2.setFixedSize(80,40)
         self.btn_mod3.setFixedSize(80,40)
         self.btn_mod4.setFixedSize(80,40)
+        self.btn_mod5.setFixedSize(80, 40)
 
         self.btn_mod1.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
         self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255); color: black; border-radius: 0px;")
         self.btn_mod3.setStyleSheet("background-color: rgb(255,255,255); color: black; border-radius: 0px;")
         self.btn_mod4.setStyleSheet("background-color: rgb(255,255,255); color: black; border-radius: 0px;")
+        self.btn_mod5.setStyleSheet("background-color: rgb(255,255,255); color: black; border-radius: 0px;")
 
         self.btn_mod1.clicked.connect(self.btn_mod1_clicked)
         self.btn_mod2.clicked.connect(self.btn_mod2_clicked)
         self.btn_mod3.clicked.connect(self.btn_mod3_clicked)
         self.btn_mod4.clicked.connect(self.btn_mod4_clicked)
+        self.btn_mod5.clicked.connect(self.btn_mod5_clicked)
 
         #放置一个central_widget
         central_widget = QWidget(self)
@@ -67,6 +66,7 @@ class MainWindow(QMainWindow):
         self.stack2 = QWidget(self)
         self.stack3 = QWidget(self)
         self.stack4 = QWidget(self)
+        self.stack5 = QWidget(self)
 
         #stack1组件
         self.btn = None
@@ -82,12 +82,15 @@ class MainWindow(QMainWindow):
         self.stack3_ui()
         # stack4组件
         self.stack4_ui()
+        # stack5组件
+        self.stack5_ui()
 
         self.Stack = QStackedWidget (self)
-        self.Stack.addWidget (self.stack1)
-        self.Stack.addWidget (self.stack2)
-        self.Stack.addWidget (self.stack3)
-        self.Stack.addWidget (self.stack4)
+        self.Stack.addWidget(self.stack1)
+        self.Stack.addWidget(self.stack2)
+        self.Stack.addWidget(self.stack3)
+        self.Stack.addWidget(self.stack4)
+        self.Stack.addWidget(self.stack5)
         self.Stack.setStyleSheet("background-color: rgb(190,226,224);")
 
         #设置窗体的宽高和标题
@@ -99,6 +102,7 @@ class MainWindow(QMainWindow):
         layout_1.addWidget(self.btn_mod2)
         layout_1.addWidget(self.btn_mod3)
         layout_1.addWidget(self.btn_mod4)
+        layout_1.addWidget(self.btn_mod5)
         layout_1.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         layout_1.setContentsMargins(0,0,0,0)         #控件到layout之间的距离
         layout_1.setSpacing(0)                        #控件之间的距离
@@ -150,6 +154,7 @@ class MainWindow(QMainWindow):
         self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod3.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod4.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod5.setStyleSheet("background-color: rgb(255,255,255);")
 
     def btn_mod2_clicked(self):
         self.Stack.setCurrentIndex(1)
@@ -157,6 +162,7 @@ class MainWindow(QMainWindow):
         self.btn_mod2.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
         self.btn_mod3.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod4.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod5.setStyleSheet("background-color: rgb(255,255,255);")
 
     def btn_mod3_clicked(self):
         self.Stack.setCurrentIndex(2)
@@ -164,6 +170,7 @@ class MainWindow(QMainWindow):
         self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod3.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
         self.btn_mod4.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod5.setStyleSheet("background-color: rgb(255,255,255);")
 
     def btn_mod4_clicked(self):
         self.Stack.setCurrentIndex(3)
@@ -171,6 +178,15 @@ class MainWindow(QMainWindow):
         self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod3.setStyleSheet("background-color: rgb(255,255,255);")
         self.btn_mod4.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
+        self.btn_mod5.setStyleSheet("background-color: rgb(255,255,255);")
+
+    def btn_mod5_clicked(self):
+        self.Stack.setCurrentIndex(4)
+        self.btn_mod1.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod3.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod4.setStyleSheet("background-color: rgb(255,255,255);")
+        self.btn_mod5.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
 
     def stack1_ui(self):
         print("stack1_ui")
@@ -229,6 +245,13 @@ class MainWindow(QMainWindow):
         layout1.addWidget(QLabel("敬请期待3"))
         layout.addRow(layout1)
         self.stack4.setLayout(layout)
+
+    def stack5_ui(self):
+        layout = QFormLayout()
+        layout1 = QHBoxLayout()
+        layout1.addWidget(QLabel("网络爬虫"))
+        layout.addRow(layout1)
+        self.stack5.setLayout(layout)
 
     def get_dir(self):
         dialog = QFileDialog()
