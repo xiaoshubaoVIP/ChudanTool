@@ -44,17 +44,22 @@ class WebCrawler(QWidget):
         stack_main_layout.addLayout(stack_layout_2)
         self.setLayout(stack_main_layout)
 
+        #创建timer
+        self.timer = None
 
     def request_fun(self):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
         }
         web = self.line_edit_path.text()
-        timer1 = threading.Timer(3, self.repeat_fun, args=(headers, web))
-        timer1.start()
+        self.timer = threading.Timer(3, self.repeat_fun, args=(headers, web))
+        self.timer.start()
 
     def repeat_fun(self, headers, request):
         response = requests.get(request, headers=headers)
+
+        response.encoding = "utf-8" # 根据网页实际编码设置
+        
         # 确保请求成功
         if response.status_code == 200:
             html = response.text
@@ -63,6 +68,7 @@ class WebCrawler(QWidget):
             soup = BeautifulSoup(html, "html.parser")
             print(request)
             print(soup.find('title'))
+            self.text_edit.append(soup.text)
 
             # 查找所有标题（<span>），提取"class"属性为"title"的元素
             # all_titles = soup.findAll("span", attrs={"class": "title"})
@@ -76,6 +82,12 @@ class WebCrawler(QWidget):
 
         #重复执行
         self.request_fun()
+
+    #复写closeEvent
+    def stack_close(self):
+        print("关闭timer")
+        self.push_button_start.setEnabled(False)
+        self.timer.cancel()
 
     def start_button(self):
         print('请求开始')

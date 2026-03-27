@@ -209,6 +209,10 @@ class MainWindow(QMainWindow):
         # 将窗口移动到屏幕中央
         self.move(int((screen.width() - size.width()) / 2), int((screen.height() - size.height()) / 2))
 
+    def closeEvent(self, event):
+        print("复写closeEvent")
+        self.stack5.stack_close()
+        event.accept()
 
 if __name__ == '__main__':
     # 每一个pyqt程序中都需要有一个QApplication对象，sys.argv是一个命令行参数列表
