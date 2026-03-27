@@ -1,3 +1,5 @@
+import threading
+import time
 import requests
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
@@ -15,8 +17,7 @@ class WebCrawler(QWidget):
         # self.btn.clicked.connect(self.get_dir)
 
         #文本框设定
-        self.path = QtCore.QDir.currentPath()
-        self.line_edit_path = QLineEdit(str(self.path))
+        self.line_edit_path = QLineEdit(str('https://www.baidu.com/Index.htm'))
         self.line_edit_path.setFixedHeight(40)
         self.line_edit_path.setStyleSheet("QLineEdit { background-color: white; }")
 
@@ -43,33 +44,41 @@ class WebCrawler(QWidget):
         stack_main_layout.addLayout(stack_layout_2)
         self.setLayout(stack_main_layout)
 
-    def start_button(self):
-        print('请求开始')
+
+    def request_fun(self):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
         }
         web = self.line_edit_path.text()
-        print(web)
-        for start_num in range(0, 250, 25):
+        timer1 = threading.Timer(3, self.repeat_fun, args=(headers, web))
+        timer1.start()
 
-            # 向目标网页的URL发送HTTP GET请求
-            response = requests.get(f"{web}?start={start_num}", headers=headers)
+    def repeat_fun(self, headers, request):
+        response = requests.get(request, headers=headers)
+        # 确保请求成功
+        if response.status_code == 200:
+            html = response.text
 
-            # 确保请求成功
-            if response.status_code == 200:
-                html = response.text
+            # 使用BeautifulSoup解析HTML内容
+            soup = BeautifulSoup(html, "html.parser")
+            print(request)
+            print(soup.find('title'))
 
-                # 使用BeautifulSoup解析HTML内容
-                soup = BeautifulSoup(html, "html.parser")
+            # 查找所有标题（<span>），提取"class"属性为"title"的元素
+            # all_titles = soup.findAll("span", attrs={"class": "title"})
+            #
+            # for title in all_titles:
+            #     title_string = title.string
+            #     if '/' not in title_string:
+            #         print(title_string)
+        else:
+            print("请求失败，状态码：", response.status_code)
 
-                # 查找所有标题（<span>），提取"class"属性为"title"的元素
-                all_titles = soup.findAll("span", attrs={"class": "title"})
+        #重复执行
+        self.request_fun()
 
-                for title in all_titles:
-                    title_string = title.string
-                    if '/' not in title_string:
-                        print(title_string)
-
-            else:
-                print("请求失败，状态码：", response.status_code)
+    def start_button(self):
+        print('请求开始')
+        self.request_fun()
+        # thread1.join()
 
