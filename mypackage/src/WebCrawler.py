@@ -1,6 +1,8 @@
+import requests
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget
+from bs4 import BeautifulSoup
 
 
 class WebCrawler(QWidget):
@@ -41,8 +43,33 @@ class WebCrawler(QWidget):
         stack_main_layout.addLayout(stack_layout_2)
         self.setLayout(stack_main_layout)
 
-    @staticmethod
     def start_button(self):
         print('请求开始')
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
+        }
+        web = self.line_edit_path.text()
+        print(web)
+        for start_num in range(0, 250, 25):
 
+            # 向目标网页的URL发送HTTP GET请求
+            response = requests.get(f"{web}?start={start_num}", headers=headers)
+
+            # 确保请求成功
+            if response.status_code == 200:
+                html = response.text
+
+                # 使用BeautifulSoup解析HTML内容
+                soup = BeautifulSoup(html, "html.parser")
+
+                # 查找所有标题（<span>），提取"class"属性为"title"的元素
+                all_titles = soup.findAll("span", attrs={"class": "title"})
+
+                for title in all_titles:
+                    title_string = title.string
+                    if '/' not in title_string:
+                        print(title_string)
+
+            else:
+                print("请求失败，状态码：", response.status_code)
 
