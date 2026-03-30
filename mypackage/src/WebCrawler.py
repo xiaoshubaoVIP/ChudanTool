@@ -17,7 +17,7 @@ class WebCrawler(QWidget):
         # self.btn.clicked.connect(self.get_dir)
 
         #文本框设定
-        self.line_edit_path = QLineEdit(str('https://www.baidu.com/Index.htm'))
+        self.line_edit_path = QLineEdit(str('https://www.baidu.com'))
         self.line_edit_path.setFixedHeight(40)
         self.line_edit_path.setStyleSheet("QLineEdit { background-color: white; }")
 
@@ -66,10 +66,17 @@ class WebCrawler(QWidget):
 
             # 使用BeautifulSoup解析HTML内容
             soup = BeautifulSoup(html, "html.parser")
-            print(request)
-            print(soup.find('title'))
-            self.text_edit.append(soup.text)
+            title = soup.find('title')
 
+            print(request)
+            print(str(title))
+
+            self.text_edit.append("百度热搜\n")
+            for tt in soup.find_all('ul', class_='s-hotsearch-content'):
+                for ss  in tt.find_all('span', class_='title-content-title'):
+                    print(ss.text)
+                    self.text_edit.append(str(ss.text))
+            self.text_edit.append("--------------------------\n")
             # 查找所有标题（<span>），提取"class"属性为"title"的元素
             # all_titles = soup.findAll("span", attrs={"class": "title"})
             #
