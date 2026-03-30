@@ -75,13 +75,14 @@ class WebCrawler(QWidget):
             print(request)
             print(str(title))
 
-            table = soup.find("table", class_="list")
-            rows = table.find_all("tr")
+            links = []
+            for a in soup.find_all("a"):
+                href = a.get("href")
+                if href:
+                    links.append(href)
 
-            for row in rows:
-                cols = row.find_all(["td", "th"])
-                data = [col.text.strip() for col in cols]
-                print(data)
+            for link in links:
+                print(link)
 
             #百度热搜
             # for tt in soup.find_all('ul', class_='s-hotsearch-content'):
