@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 class WebCrawler(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
+        #请求状态
+        self.request_states = False
+
         #实例化按键
         self.btn = QPushButton("输入URL")
         self.btn.setStyleSheet("background-color: rgb(255,255,255); color: black;")
@@ -17,7 +20,7 @@ class WebCrawler(QWidget):
         # self.btn.clicked.connect(self.get_dir)
 
         #文本框设定
-        self.line_edit_path = QLineEdit(str('https://www.baidu.com'))
+        self.line_edit_path = QLineEdit(str('https://gs.amac.org.cn/amac-infodisc/res/pof/fund/index.html'))
         self.line_edit_path.setFixedHeight(40)
         self.line_edit_path.setStyleSheet("QLineEdit { background-color: white; }")
 
@@ -26,6 +29,7 @@ class WebCrawler(QWidget):
         self.push_button_start.setStyleSheet("background-color: rgb(255,255,255); color: black;")
         self.push_button_start.setFixedSize(100, 40)
         self.push_button_start.clicked.connect(self.start_button)
+
 
         #实例化textEdit并加入布局
         self.text_edit = QTextEdit()
@@ -71,19 +75,21 @@ class WebCrawler(QWidget):
             print(request)
             print(str(title))
 
-            self.text_edit.append("百度热搜\n")
-            for tt in soup.find_all('ul', class_='s-hotsearch-content'):
-                for ss  in tt.find_all('span', class_='title-content-title'):
-                    print(ss.text)
-                    self.text_edit.append(str(ss.text))
-            self.text_edit.append("--------------------------\n")
-            # 查找所有标题（<span>），提取"class"属性为"title"的元素
-            # all_titles = soup.findAll("span", attrs={"class": "title"})
-            #
-            # for title in all_titles:
-            #     title_string = title.string
-            #     if '/' not in title_string:
-            #         print(title_string)
+            table = soup.find("table", class_="list")
+            rows = table.find_all("tr")
+
+            for row in rows:
+                cols = row.find_all(["td", "th"])
+                data = [col.text.strip() for col in cols]
+                print(data)
+
+            #百度热搜
+            # for tt in soup.find_all('ul', class_='s-hotsearch-content'):
+            #     for ss  in tt.find_all('span', class_='title-content-title'):
+            #         print(ss.text)
+            #         self.text_edit.append(str(ss.text))
+            # self.text_edit.append("--------------------------\n")
+
         else:
             print("请求失败，状态码：", response.status_code)
 
@@ -97,7 +103,12 @@ class WebCrawler(QWidget):
         self.timer.cancel()
 
     def start_button(self):
-        print('请求开始')
-        self.request_fun()
-        # thread1.join()
-
+        if self.request_states:
+            self.request_states = False
+            self.push_button_start.setText('请求')
+            self.timer.cancel()
+        else:
+            self.request_states = True
+            print('请求开始')
+            self.push_button_start.setText('停止')
+            self.request_fun()
