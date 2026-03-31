@@ -1,5 +1,10 @@
 import threading
 import time
+from urllib.parse import urljoin
+
+import pandas as pd
+from selenium import webdriver
+
 import requests
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
@@ -59,6 +64,28 @@ class WebCrawler(QWidget):
         self.timer = threading.Timer(3, self.repeat_fun, args=(headers, web))
         self.timer.start()
 
+    def chrome_fun(self):
+        #目标网站
+        url = self.line_edit_path.text()
+
+        # 创建浏览器驱动对象
+        driver_path = r'/Users/weaabduljamac/Downloads/chromedriver'
+        driver = webdriver.Chrome(driver_path)
+
+        # 设置代理服务器参数
+        proxy_host = "www.16yun.cn"
+        proxy_port = "3111"
+        proxy_user = "16YUN"
+        proxy_pass = "16IP"
+        options = webdriver.ChromeOptions()
+        options.add_argument(f"--proxy-server=http://{proxy_user}:{proxy_pass}@{proxy_host}:{proxy_port}")
+
+        # 打开目标网站
+        driver.get(url)
+
+
+
+
     def repeat_fun(self, headers, request):
         response = requests.get(request, headers=headers)
 
@@ -75,14 +102,61 @@ class WebCrawler(QWidget):
             print(request)
             print(str(title))
 
-            links = []
-            for a in soup.find_all("a"):
-                href = a.get("href")
-                if href:
-                    links.append(href)
+            table = soup.find('table', attrs={'id': 'fundlist'})
+            print(str(table))
 
-            for link in links:
-                print(link)
+            #通过定位 <thead> 下的所有 <th> 标签来获取全部表头，并将每个表头的文本添加到 headers 列表中
+            headers = []
+            header_row = table.find('thead').find_all('th')
+            for th in header_row:
+                headers.append(th.text.strip())
+            print('header:'+str(headers))
+
+            #使用 find_all() 方法提取表格中的每一行并将数据添加到 data 列表
+            data = []
+            # Loop through each row in the table (skipping the header row)
+            for tr in table.find_all('tr')[1:]:
+                row = []
+                for td in tr.find_all('td'):
+                    cell_data = td.text.strip()
+                    row.append(cell_data)
+                    print(row)
+                data.append(row)
+
+            #将data转换成dateFrame格式
+            df = pd.DataFrame(data, columns=headers)
+            print(df.shape)
+
+            #提取css文件
+            # print("---css_url---")
+            # for link in soup.find_all('link', rel='stylesheet'):
+            #     css_url = link['href']
+            #     print(css_url)
+            #
+            #提取js文件
+            # print("+++js_url+++")
+            # for script in soup.find_all('script', src=True):
+            #     js_url = script['src']
+            #     print(js_url)
+
+
+            # tbody = soup1.select('tbody')
+            # content = []
+            # for row in tbody[0].find_all('tr'):
+            #     cols = row.find_all('td')
+            #     content.append([col.get_text() for col in cols])
+            # print(content)
+
+
+            #找出内部URL
+            # links = []
+            # for a in soup.find_all("a"):
+            #     href = a.get("href")
+            #     if href:
+            #         links.append(href)
+            #
+            # for link in links:
+            #     print(link)
 
             #百度热搜
             # for tt in soup.find_all('ul', class_='s-hotsearch-content'):
