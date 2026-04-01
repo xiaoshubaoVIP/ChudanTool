@@ -17,6 +17,11 @@ from bs4 import BeautifulSoup
 class WebCrawler(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
+
+        self.error = '<font color="red">{}</font>'
+        self.warning = '<font color="orange">{}</font>'
+        self.valid = '<font color="green">{}</font>'
+
         #请求状态
         self.request_states = False
 
@@ -102,17 +107,24 @@ class WebCrawler(QWidget):
         try:
             response.raise_for_status()  # 如果状态码不是 200，会抛出异常
             print("请求成功！")
-
+            self.text_edit.append(self.valid.format("请求成功"))
+            
             # 6. 解析返回的数据 (通常是 JSON 格式)
             data = response.json()
 
             # 7. 将数据转换为 DataFrame (以 pandas 处理为例)
             # 你需要根据实际的 JSON 结构调整代码
             # 假设数据在 data['results'] 这个键下面
+            print(data)  # 打印完整数据以便分析
             if 'content' in data:
                 df = pd.DataFrame(data['content'])
-                # df.drop(['id', 'managerType', 'lastQuarterUpdate'], axis=1, inplace=True)
-                print(df[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
+                if df.empty:
+                    print("没有搜索到相关记录")
+                    self.text_edit.append(self.error.format("没有搜索到相关记录"))
+                else:
+                    # df.drop(['id', 'managerType', 'lastQuarterUpdate'], axis=1, inplace=True)
+                    print(df[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
+
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
