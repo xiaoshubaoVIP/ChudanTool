@@ -1,3 +1,4 @@
+import datetime
 import os
 import threading
 import time
@@ -131,8 +132,32 @@ class WebCrawler(QWidget):
                     records_message = "找到" + str(data['totalElements']) + "条记录"
                     print(records_message)
 
-                    # df.drop(['id', 'managerType', 'lastQuarterUpdate'], axis=1, inplace=True)
+                    #删除不需要的列
+                    df.drop(['id',
+                             'managerType',
+                             'lastQuarterUpdate',
+                             'managerType',
+                             'lastQuarterUpdate',
+                             'isDeputeManage',
+                             'url',
+                             'managerUrl',
+                             'managersInfo'
+                             ], axis=1, inplace=True)
 
+                    # 时间戳转换
+                    df['establishDate'] = pd.to_datetime(df['establishDate'], unit='ms', errors='coerce')
+                    df['putOnRecordDate'] = pd.to_datetime(df['putOnRecordDate'], unit='ms', errors='coerce')
+
+                    #修改列名
+                    df = df.rename(columns={
+                        'fundNo':'基金编码',
+                        'fundName': '基金名称',
+                        'managerName': '私募基金管理人名称',
+                        'mandatorName':'托管人名称',
+                        'establishDate': '成立时间',
+                        'putOnRecordDate': '备案时间',
+                        'workingState':'基金状态'
+                    })
 
                     #合并表格
                     self.dp =  pd.concat([self.dp, df])
@@ -143,10 +168,16 @@ class WebCrawler(QWidget):
                         self.request_page_num += 1
                         self.request_fun()
                     else:
-                        print(self.dp[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
+                        print(self.dp[['私募基金管理人名称', '基金编码', '基金名称', '托管人名称', '成立时间', '备案时间']])
                         # self.text_edit.append(self.dp.to_csv(index=False))
                         self.text_edit.append(self.valid.format(records_message))
                         self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
+
+                        #请求完成
+                        self.text_edit.append(self.valid.format("请求完成"))
+                        self.request_states = False
+                        self.push_button_start.setText('请求')
+                        self.timer.cancel()
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
