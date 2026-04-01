@@ -75,34 +75,22 @@ class WebCrawler(QWidget):
         api_url = str(self.line_edit_path.text()) + '/amac-infodisc/api/pof/fund?&page=0&size=20'
 
         print(api_url)
-
-        cookies = {
-            'Hm_lvt_a0d0f99af80247cfcb96d30732a5c560': '1774920635,1774938609',
+        payload = {
+            'page': '0',
+            'size': '20'
+            # ... 把你看到的所有参数都加进来
         }
 
         headers = {
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-            'Connection': 'keep-alive',
-            # Already added when you pass json=
-            # 'Content-Type': 'application/json',
-            'Origin': 'https://gs.amac.org.cn',
-            'Referer': 'https://gs.amac.org.cn/amac-infodisc/res/pof/fund/index.html',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0',
-            'X-Requested-With': 'XMLHttpRequest',
-            'sec-ch-ua': '"Chromium";v="146", "Not-A.Brand";v="24", "Microsoft Edge";v="146"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            # 'Cookie': 'Hm_lvt_a0d0f99af80247cfcb96d30732a5c560=1774920635,1774938609',
+            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
+            # 'Connection': 'keep-alive',
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
+            'cookie':'Hm_lvt_a0d0f99af80247cfcb96d30732a5c560=1774920635,1774938609'
+            # 某些网站可能需要特定的请求头，如 Referer 或 Authorization
         }
 
-        json_data = {}
-
         # 3. 发送 GET 请求
-        response = requests.post(api_url, cookies=cookies, headers=headers, json=json_data)
+        response = requests.post(api_url, json=payload, headers=headers)
         response.raise_for_status()  # 检查请求是否成功
 
         # 5. 检查请求是否成功
@@ -116,9 +104,9 @@ class WebCrawler(QWidget):
             # 7. 将数据转换为 DataFrame (以 pandas 处理为例)
             # 你需要根据实际的 JSON 结构调整代码
             # 假设数据在 data['results'] 这个键下面
-            if 'results' in data:
-                df = pd.DataFrame(data['results'])
-                print(df.head())  # 打印前5行看看
+            if 'content' in data:
+                df = pd.DataFrame(data['content'])
+                print(df[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
