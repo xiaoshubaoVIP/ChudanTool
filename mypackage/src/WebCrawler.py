@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from urllib.parse import urljoin
@@ -9,7 +10,7 @@ from lxml import html
 
 import requests
 from PyQt5 import QtCore
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QDir
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel
 from bs4 import BeautifulSoup
 
@@ -17,12 +18,13 @@ from bs4 import BeautifulSoup
 class WebCrawler(QWidget):
     def __init__(self):
         super(QWidget, self).__init__()
-
+        #状态提醒
         self.error = '<font color="red">{}</font>'
         self.warning = '<font color="orange">{}</font>'
         self.valid = '<font color="green">{}</font>'
 
-        #请求状态
+        #请求数据
+        self.dp = pd.DataFrame()
         self.request_page_num = 0
         self.request_states = False
 
@@ -70,6 +72,14 @@ class WebCrawler(QWidget):
 
         #创建timer
         self.timer = None
+
+        # 获取当前目录的上一级
+        temp_path = QDir.currentPath()
+        temp_path = QDir(temp_path)
+        if temp_path.cdUp():
+            self.path = temp_path.absolutePath()+'/found/'
+            if not os.path.isdir(self.path):
+                os.mkdir(self.path)
 
     def request_fun(self):
         self.timer = threading.Timer(1, self.fund_search, args=str(self.request_page_num))
@@ -122,7 +132,10 @@ class WebCrawler(QWidget):
                     print(records_message)
 
                     # df.drop(['id', 'managerType', 'lastQuarterUpdate'], axis=1, inplace=True)
-                    print(df[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
+
+
+                    #合并表格
+                    self.dp =  pd.concat([self.dp, df])
 
                     # 判断是否需要重复执行
                     print("page:", str(self.request_page_num), str(request_page_max))
@@ -130,7 +143,10 @@ class WebCrawler(QWidget):
                         self.request_page_num += 1
                         self.request_fun()
                     else:
+                        print(self.dp[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
+                        # self.text_edit.append(self.dp.to_csv(index=False))
                         self.text_edit.append(self.valid.format(records_message))
+                        self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
