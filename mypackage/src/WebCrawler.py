@@ -113,7 +113,7 @@ class WebCrawler(QWidget):
         try:
             response.raise_for_status()  # 如果状态码不是 200，会抛出异常
             print("请求成功！")
-            self.text_edit.append(self.valid.format("请求成功:"+api_url))
+            self.text_edit.append(self.valid.format("请求成功:"+api_url+"✅"))
             
             # 6. 解析返回的数据 (通常是 JSON 格式)
             data = response.json()
@@ -159,6 +159,10 @@ class WebCrawler(QWidget):
                         'workingState':'基金状态'
                     })
 
+                    #调整列顺序
+                    new_order = ['私募基金管理人名称', '基金编码', '基金名称', '托管人名称', '成立时间', '备案时间', '基金状态']
+                    df = df[new_order]
+
                     #合并表格
                     self.dp =  pd.concat([self.dp, df])
 
@@ -170,11 +174,17 @@ class WebCrawler(QWidget):
                     else:
                         print(self.dp[['私募基金管理人名称', '基金编码', '基金名称', '托管人名称', '成立时间', '备案时间']])
                         # self.text_edit.append(self.dp.to_csv(index=False))
-                        self.text_edit.append(self.valid.format(records_message))
-                        self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
+                        self.text_edit.append(self.valid.format(records_message+"✅"))
+
+                        try:
+                            self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
+                            print("✅ 文件写入成功！")
+                        except Exception as e:
+                            print(f"❌ 写入失败，错误信息: {e}")
+                            self.text_edit.append(self.error.format("写入excel失败，确保文件在关闭状态❌"))
 
                         #请求完成
-                        self.text_edit.append(self.valid.format("请求完成"))
+                        self.text_edit.append(self.valid.format("请求完成✅ "))
                         self.request_states = False
                         self.push_button_start.setText('请求')
                         self.timer.cancel()

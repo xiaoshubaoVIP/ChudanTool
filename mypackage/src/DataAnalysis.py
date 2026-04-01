@@ -45,7 +45,7 @@ class DataAnalysis(QWidget):
         if not os.path.isdir(self.set_path):
             os.mkdir(self.set_path)
             print("set文件不存在")
-            self.text_edit.append(self.error.format("请先在setting目录下添加设置文件"))
+            self.text_edit.append(self.error.format("请先在setting目录下添加设置文件❌"))
         else:
             set_file = Path(self.set_path + 'setting.xlsx')
             if set_file.is_file():
@@ -57,10 +57,10 @@ class DataAnalysis(QWidget):
                     self.text_edit.append(self.valid.format("设置文件读取正常"))
                 except FileNotFoundError as e:
                     print(f"设置文件打开失败: {e}")
-                    self.text_edit.append(self.error.format(f"设置文件打开失败: {e}"))
+                    self.text_edit.append(self.error.format(f"设置文件打开失败: {e}❌"))
             else:
                 print("set文件不存在")
-                self.text_edit.append(self.error.format("设置文件不存在"))
+                self.text_edit.append(self.error.format("设置文件不存在❌"))
 
         #布局
         stack_main_layout = QVBoxLayout()
@@ -101,10 +101,10 @@ class DataAnalysis(QWidget):
                                     self.text_edit.append(str(src_value))
                                 else:
                                     print('源数据文件表格sheet错误')
-                                    self.text_edit.append(self.error.format("源数据文件表格sheet错误"))
+                                    self.text_edit.append(self.error.format("源数据文件表格sheet错误❌"))
                             except FileNotFoundError as e:
                                 print(f"源数据excel文件打开失败: {e}")
-                                self.text_edit.append(self.error.format(f"源数据excel文件打开失败:{e}"))
+                                self.text_edit.append(self.error.format(f"源数据excel文件打开失败:{e}❌"))
 
 
     #遍历当前目录
@@ -125,11 +125,11 @@ class DataAnalysis(QWidget):
                 elif company_data['源数据excel文件'].nunique() != 1 :
                     print("源数据excel文件不一致")
                     self.text_edit.append(self.error.format("目录:" + str(dir_name)))
-                    self.text_edit.append(self.error.format("源数据excel文件不一致"))
+                    self.text_edit.append(self.error.format("源数据excel文件不一致❌"))
                 elif company_data['源数据sheet表格'].nunique() != 1:
                     print("源sheet不一致")
                     self.text_edit.append(self.error.format("目录:" + str(dir_name)))
-                    self.text_edit.append(self.error.format("源sheet不一致"))
+                    self.text_edit.append(self.error.format("源sheet不一致❌"))
 
     def get_dir(self):
         dialog = QFileDialog()
@@ -152,10 +152,10 @@ class DataAnalysis(QWidget):
         self.text_edit.append('目录:'+path)
         if not os.path.isdir(path):
             print("错误")
-            self.text_edit.append(self.error.format("错误"))
+            self.text_edit.append(self.error.format("目录错误❌"))
         else:
             print("正确")
-            self.text_edit.append(self.valid.format("目录正常"))
+            self.text_edit.append(self.valid.format("目录正常✅"))
 
             subset_des_file_name = str(self.set_data.loc[0, '目标excel文件'])
 
@@ -177,7 +177,7 @@ class DataAnalysis(QWidget):
                             des_wb = load_workbook(des_file)
                             if str(sheet_name) in des_wb.sheetnames:
                                 self.des_sheet = des_wb[str(sheet_name)]
-                                self.text_edit.append(self.valid.format("目标文件打开正常"))
+                                self.text_edit.append(self.valid.format("目标文件打开正常✅"))
                                 self.path = path
                                 self.list_directory()
                                 des_wb.save(des_file)
@@ -185,20 +185,20 @@ class DataAnalysis(QWidget):
                                 break
                             else:
                                 print("未找到目标sheet:"+sheet_name)
-                                self.text_edit.append(self.error.format("目标sheet打开失败:"+str(sheet_name)))
+                                self.text_edit.append(self.error.format("目标sheet打开失败:"+str(sheet_name)+'❌'))
                                 self.text_edit.append(self.error.format(str(des_wb.sheetnames)))
 
                         except FileNotFoundError as e:
                             save_res = False
                             print(f"目标文件打开失败 :{e}")
-                            self.text_edit.append(self.error.format("目标文件"+des_file_name+"打开失败"))
+                            self.text_edit.append(self.error.format("目标文件"+des_file_name+"打开失败❌"))
                             self.text_edit.append(self.error.format(f"{e}"))
                 else:
                     save_res = False
                     print("未找到目标文件")
-                    self.text_edit.append(self.error.format("未找到目标文件"))
+                    self.text_edit.append(self.error.format("未找到目标文件❌"))
 
             if save_res:
-                self.text_edit.append(self.valid.format("执行完成"))
+                self.text_edit.append(self.valid.format("执行完成✅"))
             else:
-                self.text_edit.append(self.error.format("执行失败"))
+                self.text_edit.append(self.error.format("执行失败❌"))
