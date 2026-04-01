@@ -10,7 +10,7 @@ from lxml import html
 import requests
 from PyQt5 import QtCore
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget
+from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel
 from bs4 import BeautifulSoup
 
 
@@ -20,16 +20,21 @@ class WebCrawler(QWidget):
         #请求状态
         self.request_states = False
 
-        #实例化按键
-        self.btn = QPushButton("输入URL")
-        self.btn.setStyleSheet("background-color: rgb(255,255,255); color: black;")
-        self.btn.setFixedHeight(40)
-        # self.btn.clicked.connect(self.get_dir)
-
-        #文本框设定
+        #URL设定
+        self.label_url = QLabel("输入URL")
+        self.label_url.setStyleSheet("background-color: rgb(255,255,255); color: black;")
+        self.label_url.setFixedHeight(40)
         self.line_edit_path = QLineEdit(str('https://gs.amac.org.cn/'))
         self.line_edit_path.setFixedHeight(40)
         self.line_edit_path.setStyleSheet("QLineEdit { background-color: white; }")
+
+        #关键词设定
+        self.label_keyword = QLabel("输入搜索关键词")
+        self.label_keyword.setStyleSheet("background-color: rgb(255,255,255); color: black;")
+        self.label_keyword.setFixedHeight(40)
+        self.search_keyword = QLineEdit('进化论')
+        self.search_keyword.setFixedSize(120, 40)
+        self.search_keyword.setStyleSheet("QLineEdit { background-color: white; }")
 
         #开始按键
         self.push_button_start = QPushButton('请求')
@@ -47,8 +52,10 @@ class WebCrawler(QWidget):
         stack_layout_2 = QHBoxLayout()
 
         #并加入布局
-        stack_layout_1.addWidget(self.btn)
+        stack_layout_1.addWidget(self.label_url)
         stack_layout_1.addWidget(self.line_edit_path)
+        stack_layout_1.addWidget(self.label_keyword)
+        stack_layout_1.addWidget(self.search_keyword)
         stack_layout_1.addWidget(self.push_button_start)
         stack_layout_2.addWidget(self.text_edit)
         stack_main_layout.addLayout(stack_layout_1)
@@ -76,9 +83,7 @@ class WebCrawler(QWidget):
 
         print(api_url)
         payload = {
-            'page': '0',
-            'size': '20'
-            # ... 把你看到的所有参数都加进来
+            'keyword': str(self.search_keyword.text()),
         }
 
         headers = {
@@ -106,6 +111,7 @@ class WebCrawler(QWidget):
             # 假设数据在 data['results'] 这个键下面
             if 'content' in data:
                 df = pd.DataFrame(data['content'])
+                # df.drop(['id', 'managerType', 'lastQuarterUpdate'], axis=1, inplace=True)
                 print(df[['fundNo', 'fundName', 'managerName', 'establishDate', 'putOnRecordDate']])
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
