@@ -2,6 +2,7 @@ import os
 import sys
 
 import PyQt5.QtCore as QtCore
+from PyQt5.QtGui import QIcon
 
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QMainWindow, QApplication, QAction, \
     QDesktopWidget, QLabel, QLineEdit, QPushButton, QFileDialog, QStackedWidget, QFormLayout
@@ -15,6 +16,9 @@ print(QtCore.QT_VERSION_STR)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        #设置图标
+        self.setWindowIcon(QIcon('./icon/icon.png'))
 
         #设置菜单栏
         self.ex = None
