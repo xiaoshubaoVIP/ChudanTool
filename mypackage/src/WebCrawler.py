@@ -374,8 +374,8 @@ class WebCrawler(QWidget):
         )
 
         if file_path:
-            print("确认保存")
-            self.save_file(full_path)
+            print("确认保存:",file_path)
+            self.save_file(file_path)
         else:
             print("取消保存")
 
