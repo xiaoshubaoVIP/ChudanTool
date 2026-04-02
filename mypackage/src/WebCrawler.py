@@ -346,6 +346,10 @@ class WebCrawler(QWidget):
             self.push_button_start.setText('停止')
             self.request_fun()
 
+            #删除所有数据
+            self.df.drop(self.df.index, inplace=True)
+            print("df:", self.df)
+
     def show_save_dialog(self):
         #获取当前时间作为文件名
         timestamp = time.time()
