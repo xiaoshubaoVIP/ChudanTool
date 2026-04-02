@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
 
         #设置窗体的宽高和标题
         self.resize(1680,960)
-        self.setWindowTitle("ChuChu小助手 V1.0")
+        self.setWindowTitle("ChuChu小助手 V1.1")
 
         #将左侧和右侧布局添加到主水平布局中
         layout_1.addWidget(self.btn_mod1)

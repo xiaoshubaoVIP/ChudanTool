@@ -15,15 +15,21 @@ from lxml import html
 
 import requests
 from PyQt5 import QtCore
-from PyQt5.QtCore import QObject, QDir, Qt
+from PyQt5.QtCore import QObject, QDir, Qt, pyqtSignal
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QFileDialog
 from bs4 import BeautifulSoup
 import xlsxwriter
 
 
 class WebCrawler(QWidget):
+    sendmsg = pyqtSignal(str)
+
     def __init__(self):
         super(QWidget, self).__init__()
+
+        #信号槽
+        self.sendmsg.connect(self.show_save_dialog)
+
         #状态提醒
         self.error = '<font color="red">{}</font>'
         self.warning = '<font color="orange">{}</font>'
@@ -187,7 +193,8 @@ class WebCrawler(QWidget):
                         self.push_button_start.setText('请求')
                         self.timer.cancel()
 
-                        self.show_save_dialog()
+                        # self.show_save_dialog()
+                        self.sendmsg.emit('保存文件')
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
@@ -340,11 +347,14 @@ class WebCrawler(QWidget):
             self.request_fun()
 
     def show_save_dialog(self):
-        print("保存文件")
+        #获取当前时间作为文件名
+        timestamp = time.time()
+        local_time = time.localtime(timestamp)
+        formatted_time = time.strftime('%Y-%m-%d_%H%M%S', local_time)
 
         # 使用 os.path.normpath 规范化路径，避免非法字符
         default_dir = os.path.normpath(QtCore.QDir.currentPath() + '/found/')
-        default_file = self.search_keyword.text() + '.xlsx'
+        default_file = self.search_keyword.text() + formatted_time + '.xlsx'
         full_path = os.path.join(default_dir, default_file)  # 使用 os.path.join 处理路径分隔符
 
         print("保存路径:", default_dir)
@@ -361,7 +371,7 @@ class WebCrawler(QWidget):
 
         if file_path:
             print("确认保存")
-            # self.save_file(full_path)
+            self.save_file(full_path)
         else:
             print("取消保存")
 
