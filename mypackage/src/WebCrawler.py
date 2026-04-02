@@ -5,7 +5,10 @@ import time
 from urllib.parse import urljoin
 
 import pandas as pd
+from PyInstaller.utils import win32
+
 from lxml import etree
+from openpyxl.utils import get_column_letter
 from selenium import webdriver
 from lxml import html
 
@@ -14,6 +17,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QObject, QDir
 from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel
 from bs4 import BeautifulSoup
+import xlsxwriter
 
 
 class WebCrawler(QWidget):
@@ -25,7 +29,7 @@ class WebCrawler(QWidget):
         self.valid = '<font color="green">{}</font>'
 
         #请求数据
-        self.dp = pd.DataFrame()
+        self.df = pd.DataFrame()
         self.request_page_num = 0
         self.request_states = False
 
@@ -145,8 +149,10 @@ class WebCrawler(QWidget):
                              ], axis=1, inplace=True)
 
                     # 时间戳转换
-                    df['establishDate'] = pd.to_datetime(df['establishDate'], unit='ms', errors='coerce')
-                    df['putOnRecordDate'] = pd.to_datetime(df['putOnRecordDate'], unit='ms', errors='coerce')
+                    # df['establishDate'] = pd.to_datetime(df['establishDate'], unit='ms', errors='coerce')
+                    # df['putOnRecordDate'] = pd.to_datetime(df['putOnRecordDate'], unit='ms', errors='coerce')
+                    df['establishDate'] = pd.to_datetime(df['establishDate'], unit='ms').dt.strftime('%Y-%m-%d')
+                    df['putOnRecordDate'] = pd.to_datetime(df['putOnRecordDate'], unit='ms').dt.strftime('%Y-%m-%d')
 
                     #修改列名
                     df = df.rename(columns={
@@ -164,7 +170,7 @@ class WebCrawler(QWidget):
                     df = df[new_order]
 
                     #合并表格
-                    self.dp =  pd.concat([self.dp, df])
+                    self.df =  pd.concat([self.df, df])
 
                     # 判断是否需要重复执行
                     print("page:", str(self.request_page_num), str(request_page_max))
@@ -172,12 +178,32 @@ class WebCrawler(QWidget):
                         self.request_page_num += 1
                         self.request_fun()
                     else:
-                        print(self.dp[['私募基金管理人名称', '基金编码', '基金名称', '托管人名称', '成立时间', '备案时间']])
+                        print(self.df[['私募基金管理人名称', '基金编码', '基金名称', '托管人名称', '成立时间', '备案时间']])
                         # self.text_edit.append(self.dp.to_csv(index=False))
                         self.text_edit.append(self.valid.format(records_message+"✅"))
 
                         try:
-                            self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
+                            #写excel失败
+                            with pd.ExcelWriter(self.path + 'fund_search_result.xlsx', engine='xlsxwriter') as writer:
+                                self.df.to_excel(writer, index=False, sheet_name='Sheet1')
+                                worksheet = writer.sheets['Sheet1']
+
+                                for i, col in enumerate(self.df.columns):
+                                    if i == 0:
+                                        column_len = min(self.df[col].astype(str).map(len).max(), len(col))  + 30
+                                    elif i == 2:
+                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col))*1.5 + 2
+                                    elif i == 3:
+                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) * 1.5 + 10
+                                    else:
+                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) + 4
+                                    worksheet.set_column(i, i, column_len)
+
+                            #千问提供方法，功能不完善
+                            # self.export_to_excel_auto_width(self.dp, self.path + 'fund_search_result.xlsx', sheet_name='sheet1')
+
+                            #不能自适应列宽
+                            #self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
                             print("✅ 文件写入成功！")
                         except Exception as e:
                             print(f"❌ 写入失败，错误信息: {e}")
