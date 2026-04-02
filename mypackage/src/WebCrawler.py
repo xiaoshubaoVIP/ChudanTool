@@ -2,6 +2,7 @@ import datetime
 import os
 import threading
 import time
+from pathlib import Path
 from urllib.parse import urljoin
 
 import pandas as pd
@@ -14,8 +15,8 @@ from lxml import html
 
 import requests
 from PyQt5 import QtCore
-from PyQt5.QtCore import QObject, QDir
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel
+from PyQt5.QtCore import QObject, QDir, Qt
+from PyQt5.QtWidgets import QPushButton, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QFileDialog
 from bs4 import BeautifulSoup
 import xlsxwriter
 
@@ -182,38 +183,11 @@ class WebCrawler(QWidget):
                         # self.text_edit.append(self.dp.to_csv(index=False))
                         self.text_edit.append(self.valid.format(records_message+"✅"))
 
-                        try:
-                            #写excel失败
-                            with pd.ExcelWriter(self.path + 'fund_search_result.xlsx', engine='xlsxwriter') as writer:
-                                self.df.to_excel(writer, index=False, sheet_name='Sheet1')
-                                worksheet = writer.sheets['Sheet1']
-
-                                for i, col in enumerate(self.df.columns):
-                                    if i == 0:
-                                        column_len = min(self.df[col].astype(str).map(len).max(), len(col))  + 30
-                                    elif i == 2:
-                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col))*1.5 + 2
-                                    elif i == 3:
-                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) * 1.5 + 10
-                                    else:
-                                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) + 4
-                                    worksheet.set_column(i, i, column_len)
-
-                            #千问提供方法，功能不完善
-                            # self.export_to_excel_auto_width(self.dp, self.path + 'fund_search_result.xlsx', sheet_name='sheet1')
-
-                            #不能自适应列宽
-                            #self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
-                            print("✅ 文件写入成功！")
-                        except Exception as e:
-                            print(f"❌ 写入失败，错误信息: {e}")
-                            self.text_edit.append(self.error.format("写入excel失败，确保文件在关闭状态❌"))
-
-                        #请求完成
-                        self.text_edit.append(self.valid.format("请求完成✅ "))
                         self.request_states = False
                         self.push_button_start.setText('请求')
                         self.timer.cancel()
+
+                        self.show_save_dialog()
             else:
                 print("未找到预期的数据键，请检查 JSON 结构。")
                 print(data)  # 打印完整数据以便分析
@@ -364,3 +338,60 @@ class WebCrawler(QWidget):
             print('请求开始')
             self.push_button_start.setText('停止')
             self.request_fun()
+
+    def show_save_dialog(self):
+        print("保存文件")
+
+        # 使用 os.path.normpath 规范化路径，避免非法字符
+        default_dir = os.path.normpath(QtCore.QDir.currentPath() + '/found/')
+        default_file = self.search_keyword.text() + '.xlsx'
+        full_path = os.path.join(default_dir, default_file)  # 使用 os.path.join 处理路径分隔符
+
+        print("保存路径:", default_dir)
+
+        # 确保目录存在，exist_ok=True 避免重复创建错误
+        os.makedirs(default_dir, exist_ok=True)
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            '保存 Excel 文件',
+            full_path,
+            'Excel Files (*.xlsx)'
+        )
+
+        if file_path:
+            print("确认保存")
+            # self.save_file(full_path)
+        else:
+            print("取消保存")
+
+    def save_file(self, save_file):
+        try:
+            # 写excel失败
+            with pd.ExcelWriter(save_file, engine='xlsxwriter') as writer:
+                self.df.to_excel(writer, index=False, sheet_name='Sheet1')
+                worksheet = writer.sheets['Sheet1']
+
+                for i, col in enumerate(self.df.columns):
+                    if i == 0:
+                        column_len = min(self.df[col].astype(str).map(len).max(), len(col)) + 30
+                    elif i == 2:
+                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) * 1.5 + 2
+                    elif i == 3:
+                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) * 1.5 + 10
+                    else:
+                        column_len = max(self.df[col].astype(str).map(len).max(), len(col)) + 4
+                    worksheet.set_column(i, i, column_len)
+
+            # 千问提供方法，功能不完善
+            # self.export_to_excel_auto_width(self.dp, self.path + 'fund_search_result.xlsx', sheet_name='sheet1')
+
+            # 不能自适应列宽
+            # self.dp.to_excel(self.path + 'fund_search_result.xlsx', index=False)
+            print("✅ 文件写入成功！")
+        except Exception as e:
+            print(f"❌ 写入失败，错误信息: {e}")
+            self.text_edit.append(self.error.format("写入excel失败，确保文件在关闭状态❌"))
+
+        # 请求完成
+        self.text_edit.append(self.valid.format("请求完成✅ "))

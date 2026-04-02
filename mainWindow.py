@@ -169,15 +169,22 @@ class MainWindow(QMainWindow):
         self.stack4.setLayout(layout)
 
     def open_set_file(self):
-        dialog = QFileDialog(self, "打开设置文件")
-        dialog.setDirectory(self.set_path)
-        dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setOption(QFileDialog.ReadOnly)
+        print("设置")
+        temp_path = QtCore.QDir(QtCore.QDir.currentPath())
+        set_path = temp_path.absolutePath()+'/setting/'
 
-        if dialog.exec_():
-            select_set_file = dialog.selectedFiles()[0]
-            os.startfile(select_set_file)
-            print(f"选择设置文件：{select_set_file}")
+        if os.path.isdir(set_path):
+            dialog = QFileDialog(self, "打开设置文件")
+            dialog.setDirectory(set_path)
+            dialog.setFileMode(QFileDialog.AnyFile)
+            dialog.setOption(QFileDialog.ReadOnly)
+
+            if dialog.exec_():
+                select_set_file = dialog.selectedFiles()[0]
+                os.startfile(select_set_file)
+                print(f"选择设置文件：{select_set_file}")
+            else:
+                print("打开设置文件失败")
 
     def set_bar(self):
         # 实例化主窗口的QMenuBar对象
