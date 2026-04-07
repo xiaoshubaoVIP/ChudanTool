@@ -94,7 +94,7 @@ class WebCrawler(QWidget):
                 os.mkdir(self.path)
 
     def request_fun(self):
-        self.timer = threading.Timer(1, self.fund_search, args=str(self.request_page_num))
+        self.timer = threading.Timer(1, self.fund_search, args=[str(self.request_page_num)])
         self.timer.start()
 
 

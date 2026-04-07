@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         self.btn_mod2.setFixedSize(80,40)
         self.btn_mod3.setFixedSize(80,40)
         self.btn_mod4.setFixedSize(80,40)
-        self.btn_mod5.setFixedSize(80, 40)
+        self.btn_mod5.setFixedSize(80,40)
 
         self.btn_mod1.setStyleSheet("background-color: rgb(190,226,224); color: black; border-radius: 0px;")
         self.btn_mod2.setStyleSheet("background-color: rgb(255,255,255); color: black; border-radius: 0px;")
